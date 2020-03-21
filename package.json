@@ -10,7 +10,9 @@
   "license": "ISC",
   "dependencies": {
     "jsontoxml": "^1.0.1",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "express": "latest",
+    "body-parser": "latest"
   },
   "devDependencies": {},
   "description": ""
