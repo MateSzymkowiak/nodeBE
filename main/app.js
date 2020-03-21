@@ -73,9 +73,9 @@ app.post('/rss/save', function (req, res) {
     }
 });
 
-// app.post('/rss/send', function (req, res) {
-
-// });
+app.get('/rss/send', function (req, res) {
+    res.sendStatus(204);
+});
 
 app.delete('/rss/:rssId', function (req, res) {
 
