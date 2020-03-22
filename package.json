@@ -9,11 +9,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "jsontoxml": "^1.0.1",
-    "mysql": "^2.18.1",
+    "@sendgrid/mail": "^6.5.5",
+    "body-parser": "latest",
     "express": "latest",
-    "body-parser": "latest"
+    "jsontoxml": "^1.0.1",
+    "mysql": "^2.18.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "cors": "^2.8.5",
+    "nodemailer": "^6.4.6"
+  },
   "description": ""
 }
