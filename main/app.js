@@ -118,6 +118,5 @@ app.delete('/rss/:rssId', function (req, res) {
 });
 
 let server = app.listen(this.port, function () {
-
     console.log(`Example app listening at ${port}`)
 });
