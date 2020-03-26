@@ -2,14 +2,19 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const jsonxml = require('jsontoxml');
 const mysql = require('mysql');
-const app = express();
+const cors = require('cors');
+const emailSender = require('./email');
 
-app.use(bodyParser.json({ extended: true }));
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json({extended: true}));
+const port=process.env.PORT || 3000;
 
 const dbCredentials = {
-    host: "mszymkowiak.mysql.database.azure.com",
-    user: "mszymkowiak@mszymkowiak",
-    password: "Tester123!",
+    host: "localhost",
+    user: "root",
+    password: "",
     database: "azure_be"
 };
 
@@ -19,22 +24,21 @@ app.get('/rss/', function (req, res) {
 
     let con = mysql.createConnection(dbCredentials);
 
-    con.connect(function(err) {
+    con.connect(function (err) {
         if (err) throw err;
         con.query(sql, function (err, result) {
-            if (err) throw err;
-            res.send(jsonxml(result));
+            res.send(result);
         });
     });
 });
 
 app.get('/rss/:rssId', function (req, res) {
 
-    let sql = `SELECT * FROM rss WHERE id=${req.params.rssId};`;
+    let sql = `SELECT * FROM rss WHERE id="${req.params.rssId}";`;
 
     let con = mysql.createConnection(dbCredentials);
 
-    con.connect(function(err) {
+    con.connect(function (err) {
         if (err) throw err;
         con.query(sql, function (err, result) {
             if (err) throw err;
@@ -45,45 +49,66 @@ app.get('/rss/:rssId', function (req, res) {
 
 app.post('/rss/save', function (req, res) {
 
-    if(req.body.email == null || req.body.title==null || req.body.description==null){
+    if (req.body.mail == null || req.body.title == null || req.body.header == null) {
         console.log("Failed to add RSS");
 
-        res.status(404).send({Error: "Required fields: [ email, title, description ]"});
-    }else {
+        res.status(400).send({Error: "Required fields: [ email, title, header ]"});
+    } else {
 
         console.log("Creating new RSS");
 
-        let response = {
-            "email": req.body.email,
-            "title": req.body.title,
-            "description": req.body.description
-        };
-
-        let sql = "INSERT INTO rss (title,description,email) VALUES ("+"'"+response.title+"','"+response.description+"','"+response.email+"');";
+        let sql = `INSERT INTO rss (title,header,description,email) VALUES ("${req.body.title}","${req.body.header}","${req.body.description}","${req.body.mail}");`;
         let con = mysql.createConnection(dbCredentials);
 
-        con.connect(function(err) {
+        con.connect(function (err) {
             if (err) throw err;
             con.query(sql, function (err, result) {
                 if (err) throw err;
             });
-        });
 
-        res.status(201).send(jsonxml(response));
+            sql = `SELECT * FROM rss ORDER BY id DESC LIMIT 1;`;
+            con.query(sql, function (err, result) {
+                if (err) throw err;
+                res.status(201).send(result);
+            });
+        });
     }
 });
 
-app.get('/rss/send', function (req, res) {
-    res.sendStatus(204);
+app.post('/rss/send', function (req, res) {
+
+    if (req.body.mail == null || req.body.title == null || req.body.header == null) {
+        console.log("Failed to add RSS");
+
+        res.status(400).send({Error: "Required fields: [ email, title, description ]"});
+    } else {
+
+        let sql = "INSERT INTO rss (title,header,description,email) VALUES (" + "'" + req.body.title + "','" + req.body.header + "','" + req.body.description + "','" + req.body.mail + "');";
+        let con = mysql.createConnection(dbCredentials);
+
+        con.connect(function (err) {
+            if (err) throw err;
+            con.query(sql, function (err, result) {
+                if (err) throw err;
+            });
+
+            sql = `SELECT * FROM rss ORDER BY id DESC LIMIT 1;`;
+            con.query(sql, function (err, result) {
+                if (err) throw err;
+                emailSender(req.body.mail, req.body.title,  req.body.header,  req.body.description);
+                    res.status(201).send(result);
+            });
+        });
+    }
 });
 
 app.delete('/rss/:rssId', function (req, res) {
 
-    let sql = "DELETE FROM rss WHERE id="+req.params.rssId+";";
+    let sql = `DELETE FROM rss WHERE id="${req.params.rssId} ";`;
 
     let con = mysql.createConnection(dbCredentials);
 
-    con.connect(function(err) {
+    con.connect(function (err) {
         if (err) throw err;
         con.query(sql, function (err, result) {
             if (err) throw err;
@@ -92,9 +117,7 @@ app.delete('/rss/:rssId', function (req, res) {
     });
 });
 
-let server = app.listen(8081, function () {
-    let host = server.address().address;
-    let port = server.address().port;
+let server = app.listen(this.port, function () {
 
-    console.log("Example app listening at http://%s:%s", host, port)
+    console.log(`Example app listening at ${port}`)
 });
