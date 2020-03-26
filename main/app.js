@@ -3,13 +3,14 @@ const bodyParser = require('body-parser');
 const jsonxml = require('jsontoxml');
 const mysql = require('mysql');
 const cors = require('cors');
+const http = require('http');
 const emailSender = require('./email');
 
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json({extended: true}));
-const port=process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
 const dbCredentials = {
     host: "localhost",
@@ -116,7 +117,10 @@ app.delete('/rss/:rssId', function (req, res) {
         });
     });
 });
-
-let server = app.listen(this.port, function () {
-    console.log(`Example app listening at ${port}`)
+// let server = app.listen(port, function () {
+//     console.log(`Example app listening at ${port}`)
+// });
+let server = http.createServer(app);
+server.listen(port, function () {
+    console.log(`Listening on port ${port}`);
 });
