@@ -5,6 +5,13 @@ const mysql = require('mysql');
 const cors = require('cors');
 const emailSender = require('./email');
 
+// Create table rss(
+//     id int(6) PRIMARY KEY AUTO_INCREMENT NOT NULL,
+//     title varchar(255) NOT NULL,
+//     header varchar(255) NOT NULL,
+//     description varchar(1023) NOT NULL,
+//     email varchar(255) NOT NULL
+// );
 
 const app = express();
 app.use(cors());
@@ -12,9 +19,9 @@ app.use(bodyParser.json({extended: true}));
 const port = process.env.PORT || 3000;
 
 const dbCredentials = {
-    host: "localhost",
-    user: "root",
-    password: "",
+    host: "mszymkowiak.mysql.database.azure.com",
+    user: "mszymkowiak@mszymkowiak",
+    password: "Tester123!",
     database: "azure_be"
 };
 
@@ -82,10 +89,10 @@ app.post('/rss/send', function (req, res) {
     if (req.body.mail == null || req.body.title == null || req.body.header == null) {
         console.log("Failed to add RSS");
 
-        res.status(400).send({Error: "Required fields: [ email, title, description ]"});
+        res.status(400).send({Error: "Required fields: [ email, title, header ]"});
     } else {
 
-        let sql = "INSERT INTO rss (title,header,description,email) VALUES (" + "'" + req.body.title + "','" + req.body.header + "','" + req.body.description + "','" + req.body.mail + "');";
+        let sql = `INSERT INTO rss (title,header,description,email) VALUES ("${req.body.title}","${req.body.header}","${req.body.description}","${req.body.mail}");`;
         let con = mysql.createConnection(dbCredentials);
 
         con.connect(function (err) {
